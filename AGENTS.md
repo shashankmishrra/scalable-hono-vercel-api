@@ -14,7 +14,7 @@ Spec-first: docs only, no application code yet. Build it from `docs/implementati
 - One-way flow only: `Controller → Service → Model → Drizzle → PostgreSQL`. Controllers never touch the DB, models never touch services/HTTP/Redis, services never import Hono.
 - React Server Components call domain services directly; never call the app's own HTTP API.
 - Admin page (`app.localhost`) is a read-only API reference — no "try it", forms, mutations, or Swagger UI.
-- `@hono/vercel`, not deprecated `hono/vercel`. Zod validates external input. Drizzle is the only DB access path.
+- Zod validates external input. Drizzle is the only DB access path.
 - Keep the `resources` feature self-contained under `src/features/resources/`.
 
 ## Stack & commands
@@ -22,6 +22,3 @@ Bun + Next.js App Router + Hono + TypeScript; Drizzle + local Supabase Postgres;
 - Scaffold a feature: `bun plop resource <name>` (structure only, no business logic).
 - Tests: Vitest (unit/integration primary), Playwright (E2E). No `package.json`/test script exists yet.
 - Hostnames: `app.localhost` (admin), `resource.localhost/:slug` (public).
-
-## Conventions
-Follow `.opencode/command/git-commit.md`: Conventional Commits with the fixed emoji map, one concern per commit, why-focused body, never commit secrets.
