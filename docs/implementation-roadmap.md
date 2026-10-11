@@ -75,7 +75,7 @@ resourcebox/
 │   ├── mvp.md
 │   ├── implementation-roadmap.md
 │   ├── implementation.md
-│   └── ui-spec.md
+│   └── design.md
 │
 ├── src/
 │   ├── app/
@@ -488,7 +488,7 @@ Requirements:
 
 Reference: `artefacts/admin-page-design.png`.
 
--   Translate the design into `docs/ui-spec.md` before implementing the
+-   Translate the design into `docs/design.md` before implementing the
     page.
 -   Match layout, spacing, typography, colors, borders, method badges,
     route grouping, schema/example/response panels, and error-code
@@ -522,7 +522,7 @@ Before writing page code:
 1.  Inspect both PNG artifacts.
 2.  Record page hierarchy, exact visible fields, dimensions/spacing,
     typography, color tokens, breakpoints, and states in
-    `docs/ui-spec.md`.
+    `docs/design.md`.
 3.  Compare the implemented pages against the supplied artifacts.
 4.  Fix meaningful visual differences before marking the UI phase
     complete.
@@ -566,7 +566,7 @@ small, deterministic, and tested against the expected output.
 
 -   Read `docs/engineering-doc.md` and `docs/mvp.md`.
 -   Inspect both design PNGs.
--   Produce `docs/ui-spec.md`.
+-   Produce `docs/design.md`.
 -   Resolve the OpenAPI generation approach and upload flow based on
     installed library capabilities.
 
