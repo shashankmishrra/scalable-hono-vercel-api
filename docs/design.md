@@ -116,8 +116,10 @@ indented.
 ### Endpoint header
 Breadcrumb `eyebrow` (`RESOURCES`) above a `display` title. Method badge:
 monospace, uppercase, small pill, colour by method (`POST` `success`, `GET`
-`info`), on a tinted background of the same hue. Path in `body` mono. Right:
-`Try it out` outline button.
+`info`), on a tinted background of the same hue. Path in `body` mono. Right: an
+outline control slot. The artifact shows `Try it out` here, but the admin page
+is read-only (`implementation-roadmap.md` §8/§14, `mvp.md` §3.1): render the slot
+as a disabled, non-interactive affordance, or omit it. Never execute requests.
 
 ### Parameter / data tables
 Two-column rows: left = field name (`body`, mono optional) + type (`caption`,
@@ -135,12 +137,12 @@ JSON`, `Description · File Info · Related`). Active tab = `ink` on
 
 ### Primary button
 Fill `primary`, text `on-primary`, radius `6px`, height `40px`, padding
-`12px 20px`, weight 500. Full width in the public Download and admin Send
-request contexts.
+`12px 20px`, weight 500. Full width in the public Download context. The admin
+`Send request` button in the artifact is not built (read-only).
 
 ### Outline button
 Transparent fill, 1px `border`, text `ink`, same height as primary. Used for
-`Try it out`, `View API Docs`.
+`View API Docs`.
 
 ### Status pill
 Radius full, tinted background, `caption` text, leading colour dot. Maps to
@@ -150,6 +152,16 @@ resource status: `pending` (`warning`), `completed` (`success`), `failed`
 ### Status-code list
 Row per code: coloured dot + code (mono) + description (`caption`, `muted`),
 separated by `border`.
+
+### Admin example panel (right rail, `360px`)
+`surface`, radius `10px`, padding `lg`. Heading `Example request` (`heading-md`)
+with caption `Send a test request to the API.`; segmented tabs
+(`curl · JavaScript · Python · HTTP`); one request code block. The artifact
+shows a full-width `Send request` primary button below the block; it is NOT
+built (read-only) — omit it or render it disabled with no handler. Then a
+`Response` heading with a `success` dot, `200 OK`, and a latency caption;
+segmented tabs (`Body · Headers · JSON`); one response code block. Finally a
+`Status codes` heading followed by the status-code list.
 
 ### Public resource page
 - Breadcrumb: home icon › `Resources` › `{slug}`.
@@ -188,11 +200,11 @@ separated by `border`.
 ## 8. Content and tone
 
 - Labels are sentence case; eyebrow group labels are uppercase.
-- Button text is an imperative verb (`Download file`, `Send request`,
-  `Try it out`).
-- API errors use the envelope from `mvp.md`:
-  `{ "error": { "code", "message" }, "requestId" }` — code uppercase
-  snake case, message human-readable and safe.
+- Button text is an imperative verb (`Download file`, `View API Docs`,
+  `Copy link`).
+- API errors use the envelope from `implementation-roadmap.md` §13:
+  `{ "code", "message", "requestId" }` — code uppercase snake case, message
+  human-readable and safe.
 - Metadata is terse: dates, sizes, and types, no filler.
 
 ---
