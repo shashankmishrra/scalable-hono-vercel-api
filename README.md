@@ -6,9 +6,9 @@ A local-first resource publishing application: a read-only API reference at
 Built with Bun, Next.js (App Router), Hono, TypeScript, Drizzle, and local
 Supabase PostgreSQL, with Redis caching and a BullMQ worker.
 
-> **Status:** Phase 1 — local infrastructure. Application code (Next.js, Hono,
-> Drizzle) is added in later phases. This README documents the infrastructure
-> that exists today.
+> **Status:** Phase 2 — application skeleton. Next.js and Hono are wired with
+> hostname routing and a `/api/health` endpoint. Domain features (Drizzle, the
+> Resource API, caching, uploads, the worker) land in later phases.
 
 ## Prerequisites
 
@@ -19,74 +19,102 @@ Supabase PostgreSQL, with Redis caching and a BullMQ worker.
 
 ## Local services
 
-| Service | Address | Managed by |
-|---|---|---|
-| Supabase Postgres | `postgresql://postgres:postgres@127.0.0.1:54322/postgres` | Supabase CLI |
-| Supabase API gateway (REST / Auth / Storage) | `http://127.0.0.1:54321` | Supabase CLI |
-| Supabase Studio | `http://127.0.0.1:54323` | Supabase CLI |
-| Redis (cache + BullMQ) | `redis://127.0.0.1:6379` | Docker Compose |
-| Nginx (hostname routing) | `http://app.localhost`, `http://resource.localhost` | Docker Compose |
-| Next.js app | `http://127.0.0.1:3000` (host process, added in Phase 2) | Bun |
+| Service                                      | Address                                                   | Managed by     |
+| -------------------------------------------- | --------------------------------------------------------- | -------------- |
+| Next.js app                                  | `http://127.0.0.1:3000`                                   | Bun            |
+| Nginx (hostname routing)                     | `http://app.localhost`, `http://resource.localhost`       | Docker Compose |
+| Redis (cache + BullMQ)                       | `redis://127.0.0.1:6379`                                  | Docker Compose |
+| Supabase Postgres                            | `postgresql://postgres:postgres@127.0.0.1:54322/postgres` | Supabase CLI   |
+| Supabase API gateway (REST / Auth / Storage) | `http://127.0.0.1:54321`                                  | Supabase CLI   |
+| Supabase Studio                              | `http://127.0.0.1:54323`                                  | Supabase CLI   |
 
-Ports and database version are defined in `supabase/config.toml`; Redis and
-Nginx are defined in `docker-compose.yml`. Nginx proxies both hostnames to the
-Next.js process on the host (`host.docker.internal:3000`) and preserves the
-`Host` header.
+Ports and database version live in `supabase/config.toml`; Redis and Nginx live
+in `docker-compose.yml`. Nginx proxies both hostnames to the Next.js process on
+the host (`host.docker.internal:3000`) and preserves the `Host` header. The
+`src/proxy.ts` file maps the hostnames to the `(admin)` and `(public)` route
+groups.
 
 ## Setup
 
 ```sh
-supabase start      # starts Postgres, Storage, Auth, REST, Studio
-docker compose up -d     # starts Redis and Nginx
-cp .env.example .env     # then paste keys from `supabase status`
+bun install                 # install dependencies
+supabase start              # start Postgres, Storage, Auth, REST, Studio
+docker compose up -d        # start Nginx + Redis
+cp .env.example .env        # then paste keys from `supabase status`
 ```
 
-`supabase start` prints the local `anon` and `service_role` keys on first run;
-copy them into `.env`.
+`supabase start` prints the local `anon` and `service_role` keys; copy them into
+`.env`. Environment variables are validated at startup by `src/lib/env.ts`.
 
-## Everyday commands
+## Run
 
 ```sh
-supabase status     # show URLs and keys
-supabase start      # start local Supabase
-supabase stop       # stop local Supabase
-docker compose up -d     # start Redis + Nginx
-docker compose down      # stop Redis + Nginx
+bun run dev                 # Next.js dev server on :3000
 ```
+
+- API reference: `http://app.localhost`
+- Public resource page: `http://resource.localhost/<slug>`
+- Health check: `http://app.localhost/api/health`
+
+## Scripts
+
+| Command                | Purpose                                  |
+| ---------------------- | ---------------------------------------- |
+| `bun run dev`          | Start the Next.js dev server             |
+| `bun run build`        | Production build                         |
+| `bun run start`        | Start the production server              |
+| `bun run lint`         | ESLint                                   |
+| `bun run format`       | Prettier (write)                         |
+| `bun run format:check` | Prettier (check)                         |
+| `bun run typecheck`    | TypeScript, no emit                      |
+| `bun run test`         | Vitest, single run                       |
+| `bun run test:watch`   | Vitest, watch mode                       |
+| `bun run plop`         | Scaffold a feature (`plop resource <n>`) |
 
 ## Database
 
 Migrations and seeds are managed by the Supabase CLI.
 
 ```sh
-supabase db reset   # apply migrations, then run supabase/seed.sql
+supabase db reset           # apply migrations, then run supabase/seed.sql
 ```
 
 Migrations live under `supabase/migrations/` and are added in Phase 3. The seed
 file `supabase/seed.sql` is intentionally empty until then.
 
-## Verify infrastructure
+## Verify
 
 ```sh
-# Postgres
-supabase status
+# API (through Hono via Next.js)
+curl -i http://127.0.0.1:3000/api/health
+# Hostname routing (requires the dev server on :3000)
+curl -i http://app.localhost/
+curl -i http://resource.localhost/ai-agents-101
 # Redis
 docker compose exec redis redis-cli ping        # -> PONG
 # Storage API (returns the Storage version)
 curl -i http://127.0.0.1:54321/storage/v1/version
-# Hostname routing (requires the Next.js app on :3000 from Phase 2)
-curl -i http://app.localhost/
-curl -i http://resource.localhost/
 ```
 
 ## Testing
 
-Unit, integration, and E2E tests are introduced in Phases 2–9 (Vitest and
-Playwright). No test runner exists yet.
+Vitest runs unit tests colocated with the code (e.g.
+`src/server/api.test.ts`). Integration, end-to-end, and infrastructure smoke
+tests are added in later phases (Vitest and Playwright).
+
+## Everyday commands
+
+```sh
+supabase status        # show URLs and keys
+supabase start         # start local Supabase
+supabase stop          # stop local Supabase
+docker compose up -d   # start Nginx + Redis
+docker compose down    # stop Nginx + Redis
+```
 
 ## Shutdown
 
 ```sh
-docker compose down      # stops Redis + Nginx
-supabase stop       # stops local Supabase
+docker compose down    # stops Nginx + Redis
+supabase stop          # stops local Supabase
 ```
