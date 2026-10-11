@@ -1,0 +1,2 @@
+-- ResourceBox seed data.
+-- Intentionally empty in Phase 1; product seed data is added with the Resource API (Phase 3).
