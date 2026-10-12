@@ -6,9 +6,12 @@ A local-first resource publishing application: a read-only API reference at
 Built with Bun, Next.js (App Router), Hono, TypeScript, Drizzle, and local
 Supabase PostgreSQL, with Redis caching and a BullMQ worker.
 
-> **Status:** Phase 2 — application skeleton. Next.js and Hono are wired with
-> hostname routing and a `/api/health` endpoint. Domain features (Drizzle, the
-> Resource API, caching, uploads, the worker) land in later phases.
+> **Status:** Phase 1 complete — local development environment. Supabase
+> (PostgreSQL, Auth, Storage), Redis, Nginx hostname routing, and the Cache,
+> Upload, and Jobs SDKs (local provider clients behind a shared interface) are
+> wired and verified. Next.js and Hono are also scaffolded with a `/api/health`
+> endpoint (Phase 2). Domain features (Drizzle, the Resource API, caching logic,
+> uploads, jobs) land in later phases.
 
 ## Prerequisites
 
@@ -24,27 +27,44 @@ Supabase PostgreSQL, with Redis caching and a BullMQ worker.
 | Next.js app                                  | `http://127.0.0.1:3000`                                   | Bun            |
 | Nginx (hostname routing)                     | `http://app.localhost`, `http://resource.localhost`       | Docker Compose |
 | Redis (cache + BullMQ)                       | `redis://127.0.0.1:6379`                                  | Docker Compose |
+| BullMQ worker                                | consumes the `resourcebox` queue on Redis                 | Docker Compose |
 | Supabase Postgres                            | `postgresql://postgres:postgres@127.0.0.1:54322/postgres` | Supabase CLI   |
 | Supabase API gateway (REST / Auth / Storage) | `http://127.0.0.1:54321`                                  | Supabase CLI   |
 | Supabase Studio                              | `http://127.0.0.1:54323`                                  | Supabase CLI   |
 
-Ports and database version live in `supabase/config.toml`; Redis and Nginx live
-in `docker-compose.yml`. Nginx proxies both hostnames to the Next.js process on
-the host (`host.docker.internal:3000`) and preserves the `Host` header. The
-`src/proxy.ts` file maps the hostnames to the `(admin)` and `(public)` route
-groups.
+Ports and database version live in `supabase/config.toml`; Redis, Nginx, and the
+worker live in `docker-compose.yml`. Nginx proxies both hostnames to the Next.js
+process on the host (`host.docker.internal:3000`) and preserves the `Host`
+header. The `src/proxy.ts` file maps the hostnames to the `(admin)` and
+`(public)` route groups.
+
+## Provider SDKs
+
+External infrastructure is accessed only through shared SDKs in `src/lib/`, so
+local development runs against local equivalents behind the same interface.
+
+| SDK    | Local provider    | Production target |
+| ------ | ----------------- | ----------------- |
+| Cache  | Redis (`ioredis`) | Upstash Redis     |
+| Upload | Supabase Storage  | AWS S3            |
+| Jobs   | BullMQ (Redis)    | Upstash QStash    |
+
+Each SDK exposes a typed client plus a `get<Name>()` factory wired to the
+environment. Feature code calls the SDK; it does not depend on a specific
+provider. Production clients are added in later phases (6/7/8).
 
 ## Setup
 
 ```sh
 bun install                 # install dependencies
 supabase start              # start Postgres, Storage, Auth, REST, Studio
-docker compose up -d        # start Nginx + Redis
+docker compose up -d        # start Nginx, Redis, and the BullMQ worker
 cp .env.example .env        # then paste keys from `supabase status`
 ```
 
-`supabase start` prints the local `anon` and `service_role` keys; copy them into
-`.env`. Environment variables are validated at startup by `src/lib/env.ts`.
+`supabase status` prints the local keys (Publishable → `SUPABASE_ANON_KEY`,
+Secret → `SUPABASE_SERVICE_ROLE_KEY`); copy them into `.env`. Environment
+variables are validated at startup by `src/lib/env.ts`.
 
 ## Run
 
@@ -70,6 +90,8 @@ bun run dev                 # Next.js dev server on :3000
 | `bun run test`         | Vitest, single run                       |
 | `bun run test:watch`   | Vitest, watch mode                       |
 | `bun run plop`         | Scaffold a feature (`plop resource <n>`) |
+| `bun run verify:infra` | Verify local infra + SDKs are reachable  |
+| `bun run worker`       | Run the BullMQ worker process            |
 
 ## Database
 
@@ -94,6 +116,8 @@ curl -i http://resource.localhost/ai-agents-101
 docker compose exec redis redis-cli ping        # -> PONG
 # Storage API (returns the Storage version)
 curl -i http://127.0.0.1:54321/storage/v1/version
+# All-in-one dependency check (Redis, Supabase, Storage, BullMQ)
+bun run verify:infra
 ```
 
 ## Testing
@@ -108,13 +132,13 @@ tests are added in later phases (Vitest and Playwright).
 supabase status        # show URLs and keys
 supabase start         # start local Supabase
 supabase stop          # stop local Supabase
-docker compose up -d   # start Nginx + Redis
-docker compose down    # stop Nginx + Redis
+docker compose up -d   # start Nginx, Redis, and the worker
+docker compose down    # stop Nginx, Redis, and the worker
 ```
 
 ## Shutdown
 
 ```sh
-docker compose down    # stops Nginx + Redis
+docker compose down    # stops Nginx, Redis, and the worker
 supabase stop          # stops local Supabase
 ```

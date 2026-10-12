@@ -1,24 +1,36 @@
 # AGENTS.md
 
-## Repo state
-Spec-first: docs only, no application code yet. Build it from `docs/implementation-roadmap.md` in phases. Don't create files ahead of the phase that needs them.
+## Source of Truth
+- `docs/mvp.md` — Product scope and acceptance criteria.
+- `docs/implementation-roadmap.md` — Architecture, project structure, API contracts, and implementation phases.
+- `docs/engineering-doc.md` — Layer responsibilities and architectural rules.
+- `docs/design.md` — UI design tokens and visual specifications. Reference images are in `artefacts/`.
 
-## Source of truth (read before coding)
-- `docs/mvp.md` — product scope, UX states, acceptance criteria (the *what*).
-- `docs/implementation-roadmap.md` — architecture, project structure, API contract, phases, agent protocol (the *how*).
-- `docs/engineering-doc.md` — layer responsibilities and the 18 architectural rules.
-- `docs/design.md` — UI design tokens; matches the PNGs in `artefacts/` (the visual source of truth).
-- `docs/mvp.md` points at `docs/implementation.md`, which does not exist — `implementation-roadmap.md` is the implementation doc. The roadmap's UI spec is `docs/design.md`, derived from the artefacts.
+Use these documents as the source of truth. Do not duplicate their contents here.
 
-## Non-negotiable architecture
-- One-way flow only: `Controller → Service → Model → Drizzle → PostgreSQL`. Controllers never touch the DB, models never touch services/HTTP/Redis, services never import Hono.
-- React Server Components call domain services directly; never call the app's own HTTP API.
-- Admin page (`app.localhost`) is a read-only API reference — no "try it", forms, mutations, or Swagger UI.
-- Zod validates external input. Drizzle is the only DB access path.
-- Keep the `resources` feature self-contained under `src/features/resources/`.
+## Architecture Rules
+- **API flow:** Controller → Service → Model → Drizzle → PostgreSQL.
+- Controllers handle HTTP; services contain business logic; models handle database operations.
+- Services must not import Hono. Models must not depend on services, HTTP, or Redis.
+- React Server Components call services directly, never the application's own HTTP API.
+- Use Zod for external input validation and Drizzle for all database access.
+- Keep the `resources` feature self-contained in `src/features/resources/`.
+- The admin page (`app.localhost`) is a read-only API reference. No mutations, forms, interactive API testing, or Swagger UI.
 
-## Stack & commands
-Bun + Next.js App Router + Hono + TypeScript; Drizzle + local Supabase Postgres; Redis read-through cache (60s list TTL); BullMQ worker as a separate Bun process; Nginx host routing.
-- Scaffold a feature: `bun plop resource <name>` (structure only, no business logic).
-- Tests: Vitest (unit/integration primary), Playwright (E2E). No `package.json`/test script exists yet.
-- Hostnames: `app.localhost` (admin), `resource.localhost/:slug` (public).
+## Stack & Commands
+- **Stack:** Bun, Next.js App Router, Hono, TypeScript, Drizzle, and local Supabase PostgreSQL.
+- **Infrastructure:** Redis read-through cache (60-second list TTL), BullMQ worker, Docker Compose, and Nginx host routing.
+- **Shared SDKs:** Keep caching, uploads, and jobs in `src/lib/cache/`, `src/lib/upload/`, and `src/lib/jobs/`. Support local providers and production integrations (Upstash, S3, and QStash).
+
+| Task | Command |
+|---|---|
+| Scaffold a resource | `bun plop resource <name>` |
+| Run tests | `bun run test` |
+| Verify local infrastructure and SDKs | `bun run verify:infra` |
+| Run the worker | `bun run worker` |
+
+Use Vitest for tests, colocated with the code. Playwright E2E tests are planned for later phases. Scaffolding creates structure only, not business logic.
+
+## Local Hosts
+- Admin: `app.localhost`
+- Public resource: `resource.localhost/:slug`
