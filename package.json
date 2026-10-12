@@ -13,11 +13,16 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "plop": "plop"
+    "plop": "plop",
+    "verify:infra": "bun run scripts/verify-infra.ts",
+    "worker": "bun run src/worker/index.ts"
   },
   "dependencies": {
     "@hono/vercel": "^1.0.1",
+    "@supabase/supabase-js": "^2.117.3",
+    "bullmq": "^6.3.13",
     "hono": "^4.13.13",
+    "ioredis": "^6.0.0",
     "next": "^16.4.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
