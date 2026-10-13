@@ -1,8 +1,9 @@
 import { Queue, Worker } from "bullmq";
-import { env } from "@/lib/env";
+
 import { getCache } from "@/lib/cache/cache";
-import { getUpload } from "@/lib/upload/upload";
+import { env } from "@/lib/env";
 import { getJobs } from "@/lib/jobs/jobs";
+import { getUpload } from "@/lib/upload/upload";
 
 async function check(name: string, fn: () => Promise<void>): Promise<boolean> {
   try {
@@ -78,11 +79,7 @@ async function main(): Promise<void> {
         worker.on("completed", (job) => resolve(job.id ?? ""));
       });
 
-      const job = await queue.add(
-        "verify.ping",
-        { at: Date.now() },
-        { removeOnComplete: true, removeOnFail: true },
-      );
+      const job = await queue.add("verify.ping", { at: Date.now() }, { removeOnComplete: true, removeOnFail: true });
       const ok = await Promise.race([
         completed.then((id) => id === (job.id ?? "")),
         new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 5000)),

@@ -12,7 +12,7 @@ yarn.lock
 .env.*
 supabase
 artefacts
-templates
 docs
 AGENTS.md
 .opencode
+src/db/migrations

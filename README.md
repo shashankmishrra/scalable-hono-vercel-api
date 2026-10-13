@@ -6,12 +6,13 @@ A local-first resource publishing application: a read-only API reference at
 Built with Bun, Next.js (App Router), Hono, TypeScript, Drizzle, and local
 Supabase PostgreSQL, with Redis caching and a BullMQ worker.
 
-> **Status:** Phase 1 complete — local development environment. Supabase
-> (PostgreSQL, Auth, Storage), Redis, Nginx hostname routing, and the Cache,
-> Upload, and Jobs SDKs (local provider clients behind a shared interface) are
-> wired and verified. Next.js and Hono are also scaffolded with a `/api/health`
-> endpoint (Phase 2). Domain features (Drizzle, the Resource API, caching logic,
-> uploads, jobs) land in later phases.
+> **Status:** Phase 3 complete — resource domain and CRUD. The `resources`
+> entity (Drizzle schema + migrations), the CRUD SDK, and the resource
+> feature (schema → model → service → controller → router) are wired to
+> PostgreSQL. `/api/resources` CRUD endpoints work with validation, pagination,
+> filters, sorting, and consistent error envelopes. Local infra and SDKs
+> (Phase 1) and the app skeleton (Phase 2) are also in place. Caching logic,
+> uploads, jobs, and the UI pages land in later phases.
 
 ## Prerequisites
 
@@ -66,6 +67,12 @@ cp .env.example .env        # then paste keys from `supabase status`
 Secret → `SUPABASE_SERVICE_ROLE_KEY`); copy them into `.env`. Environment
 variables are validated at startup by `src/lib/env.ts`.
 
+Apply database migrations (creates the `resources` table):
+
+```sh
+bun run db:migrate
+```
+
 ## Run
 
 ```sh
@@ -78,31 +85,34 @@ bun run dev                 # Next.js dev server on :3000
 
 ## Scripts
 
-| Command                | Purpose                                  |
-| ---------------------- | ---------------------------------------- |
-| `bun run dev`          | Start the Next.js dev server             |
-| `bun run build`        | Production build                         |
-| `bun run start`        | Start the production server              |
-| `bun run lint`         | ESLint                                   |
-| `bun run format`       | Prettier (write)                         |
-| `bun run format:check` | Prettier (check)                         |
-| `bun run typecheck`    | TypeScript, no emit                      |
-| `bun run test`         | Vitest, single run                       |
-| `bun run test:watch`   | Vitest, watch mode                       |
-| `bun run plop`         | Scaffold a feature (`plop resource <n>`) |
-| `bun run verify:infra` | Verify local infra + SDKs are reachable  |
-| `bun run worker`       | Run the BullMQ worker process            |
+| Command                | Purpose                                 |
+| ---------------------- | --------------------------------------- |
+| `bun run dev`          | Start the Next.js dev server            |
+| `bun run build`        | Production build                        |
+| `bun run start`        | Start the production server             |
+| `bun run lint`         | ESLint                                  |
+| `bun run format`       | Prettier (write)                        |
+| `bun run format:check` | Prettier (check)                        |
+| `bun run typecheck`    | TypeScript, no emit                     |
+| `bun run test`         | Vitest, single run                      |
+| `bun run test:watch`   | Vitest, watch mode                      |
+| `bun run verify:infra` | Verify local infra + SDKs are reachable |
+| `bun run worker`       | Run the BullMQ worker process           |
+| `bun run db:generate`  | Generate Drizzle migrations from schema |
+| `bun run db:migrate`   | Apply Drizzle migrations to Postgres    |
 
 ## Database
 
-Migrations and seeds are managed by the Supabase CLI.
+Drizzle is the single source of truth for schema and migrations. The schema is
+defined in `src/db/schema/resources.ts`; SQL migrations are generated into
+`src/db/migrations/` and applied against the local Supabase PostgreSQL.
 
 ```sh
-supabase db reset           # apply migrations, then run supabase/seed.sql
+bun run db:generate   # regenerate migrations after a schema change
+bun run db:migrate    # apply migrations to DATABASE_URL
 ```
 
-Migrations live under `supabase/migrations/` and are added in Phase 3. The seed
-file `supabase/seed.sql` is intentionally empty until then.
+The seed file `supabase/seed.sql` is intentionally empty for now.
 
 ## Verify
 
@@ -118,13 +128,32 @@ docker compose exec redis redis-cli ping        # -> PONG
 curl -i http://127.0.0.1:54321/storage/v1/version
 # All-in-one dependency check (Redis, Supabase, Storage, BullMQ)
 bun run verify:infra
+# Resource CRUD (through Hono)
+curl -i http://127.0.0.1:3000/api/resources
 ```
+
+## API
+
+The resource API is mounted under `/api/resources`:
+
+| Method   | Endpoint             | Purpose                    |
+| -------- | -------------------- | -------------------------- |
+| `POST`   | `/api/resources`     | Create a resource          |
+| `GET`    | `/api/resources`     | List resources (paginated) |
+| `GET`    | `/api/resources/:id` | Retrieve one resource      |
+| `PATCH`  | `/api/resources/:id` | Update a resource          |
+| `DELETE` | `/api/resources/:id` | Delete a resource          |
+
+List supports `page`, `pageSize`, `sort`, `status`, and `q` (name search).
+Responses use `{ data }` / `{ data, pagination }` / `{ error }` envelopes and
+include an `x-request-id` header.
 
 ## Testing
 
-Vitest runs unit tests colocated with the code (e.g.
-`src/server/api.test.ts`). Integration, end-to-end, and infrastructure smoke
-tests are added in later phases (Vitest and Playwright).
+Vitest runs unit tests colocated with the code (`src/api/app.test.ts`,
+`src/features/resources/resource.schema.test.ts`). API integration,
+end-to-end, and infrastructure smoke tests are added in later phases (Phase
+10).
 
 ## Everyday commands
 

@@ -14,8 +14,7 @@ export function proxy(request: NextRequest) {
 
   if (host === PUBLIC_HOST) {
     const url = request.nextUrl.clone();
-    url.pathname =
-      url.pathname === "/" ? PUBLIC_PATH_PREFIX : `${PUBLIC_PATH_PREFIX}${url.pathname}`;
+    url.pathname = url.pathname === "/" ? PUBLIC_PATH_PREFIX : `${PUBLIC_PATH_PREFIX}${url.pathname}`;
     return NextResponse.rewrite(url);
   }
 

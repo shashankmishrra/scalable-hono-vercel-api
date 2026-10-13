@@ -13,17 +13,20 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "plop": "plop",
     "verify:infra": "bun run scripts/verify-infra.ts",
-    "worker": "bun run src/worker/index.ts"
+    "worker": "bun run src/worker/index.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun run src/db/migrate.ts"
   },
   "dependencies": {
     "@hono/vercel": "^1.0.1",
     "@supabase/supabase-js": "^2.117.3",
     "bullmq": "^6.3.13",
+    "drizzle-orm": "^0.45.4",
     "hono": "^4.13.13",
     "ioredis": "^6.0.0",
     "next": "^16.4.0",
+    "postgres": "^3.4.9",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "zod": "^4.6.5"
@@ -32,9 +35,11 @@
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9.39.1",
     "eslint-config-next": "^16.4.0",
-    "plop": "^4.0.5",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-unused-imports": "^4.4.1",
     "prettier": "^3.9.10",
     "typescript": "^5.9.3",
     "vitest": "^5.0.3"
