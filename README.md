@@ -96,7 +96,6 @@ bun run dev                 # Next.js dev server on :3000
 | `bun run typecheck`    | TypeScript, no emit                      |
 | `bun run test`         | Vitest, single run                       |
 | `bun run test:watch`   | Vitest, watch mode                       |
-| `bun run plop`         | Scaffold a feature (`plop resource <n>`) |
 | `bun run verify:infra` | Verify local infra + SDKs are reachable  |
 | `bun run worker`       | Run the BullMQ worker process            |
 | `bun run db:generate`  | Generate Drizzle migrations from schema  |

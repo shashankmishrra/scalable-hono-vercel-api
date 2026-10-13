@@ -24,12 +24,11 @@ Use these documents as the source of truth. Do not duplicate their contents here
 
 | Task | Command |
 |---|---|
-| Scaffold a resource | `bun plop resource <name>` |
 | Run tests | `bun run test` |
 | Verify local infrastructure and SDKs | `bun run verify:infra` |
 | Run the worker | `bun run worker` |
 
-Use Vitest for tests, colocated with the code. Playwright E2E tests are planned for later phases. Scaffolding creates structure only, not business logic.
+Use Vitest for tests, colocated with the code. Playwright E2E tests are planned for later phases.
 
 ## Local Hosts
 - Admin: `app.localhost`
