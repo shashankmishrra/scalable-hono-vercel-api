@@ -16,3 +16,4 @@ templates
 docs
 AGENTS.md
 .opencode
+src/db/migrations
