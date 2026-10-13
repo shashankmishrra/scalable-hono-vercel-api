@@ -85,21 +85,21 @@ bun run dev                 # Next.js dev server on :3000
 
 ## Scripts
 
-| Command                | Purpose                                  |
-| ---------------------- | ---------------------------------------- |
-| `bun run dev`          | Start the Next.js dev server             |
-| `bun run build`        | Production build                         |
-| `bun run start`        | Start the production server              |
-| `bun run lint`         | ESLint                                   |
-| `bun run format`       | Prettier (write)                         |
-| `bun run format:check` | Prettier (check)                         |
-| `bun run typecheck`    | TypeScript, no emit                      |
-| `bun run test`         | Vitest, single run                       |
-| `bun run test:watch`   | Vitest, watch mode                       |
-| `bun run verify:infra` | Verify local infra + SDKs are reachable  |
-| `bun run worker`       | Run the BullMQ worker process            |
-| `bun run db:generate`  | Generate Drizzle migrations from schema  |
-| `bun run db:migrate`   | Apply Drizzle migrations to Postgres     |
+| Command                | Purpose                                 |
+| ---------------------- | --------------------------------------- |
+| `bun run dev`          | Start the Next.js dev server            |
+| `bun run build`        | Production build                        |
+| `bun run start`        | Start the production server             |
+| `bun run lint`         | ESLint                                  |
+| `bun run format`       | Prettier (write)                        |
+| `bun run format:check` | Prettier (check)                        |
+| `bun run typecheck`    | TypeScript, no emit                     |
+| `bun run test`         | Vitest, single run                      |
+| `bun run test:watch`   | Vitest, watch mode                      |
+| `bun run verify:infra` | Verify local infra + SDKs are reachable |
+| `bun run worker`       | Run the BullMQ worker process           |
+| `bun run db:generate`  | Generate Drizzle migrations from schema |
+| `bun run db:migrate`   | Apply Drizzle migrations to Postgres    |
 
 ## Database
 
